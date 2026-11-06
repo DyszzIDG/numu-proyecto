@@ -1,0 +1,3 @@
+@echo off
+echo Starting CSIRT Scan Worker...
+node node_modules\ts-node\dist\bin.js src\modules\scan\scan.worker.ts

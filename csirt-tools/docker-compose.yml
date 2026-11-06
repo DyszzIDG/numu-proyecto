@@ -1,0 +1,122 @@
+services:
+  # ===== UNIFIED TOOLBOX =====
+  # Replaces multiple separate containers with a single efficient Kali build
+  toolbox:
+    build:
+      context: .
+      dockerfile: Dockerfile.toolbox
+    container_name: csirt-toolbox
+    volumes:
+      - ./toolbox-data:/data
+    tty: true
+    stdin_open: true
+    restart: "unless-stopped"
+
+  # ===== SPECIALIZED TOOLS =====
+
+  # 1. Nmap - Network Scanner
+  nmap:
+    image: instrumentisto/nmap:latest
+    container_name: csirt-nmap
+    network_mode: host
+    restart: "no"
+
+  # 2. Nuclei - Vulnerability Scanner
+  nuclei:
+    image: projectdiscovery/nuclei:latest
+    container_name: csirt-nuclei
+    volumes:
+      - ./nuclei-output:/output
+    restart: "no"
+
+  # 3. YARA - Malware Pattern Scanner
+  yara:
+    image: blacktop/yara:latest
+    container_name: csirt-yara
+    volumes:
+      - ./yara-rules:/rules
+      - ./yara-samples:/samples
+    restart: "no"
+
+  # 4. tshark - Network Protocol Analyzer
+  tshark:
+    image: nicolaka/netshoot:latest
+    container_name: csirt-tshark
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    restart: "no"
+
+  # 5. Metasploit Framework
+  metasploit:
+    image: metasploitframework/metasploit-framework:latest
+    container_name: csirt-metasploit
+    volumes:
+      - ./metasploit-data:/root/.msf4
+    restart: "no"
+
+  # 6. ZAP (OWASP Zed Attack Proxy)
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    container_name: csirt-zap
+    volumes:
+      - ./zap-data:/zap/wrk
+    restart: "no"
+
+  # 7. SQLMap
+  sqlmap:
+     image: python:3.11-alpine
+     container_name: csirt-sqlmap
+     volumes:
+       - ./sqlmap-data:/root/.local/share/sqlmap
+     working_dir: /app
+     entrypoint: ["/bin/sh", "-c"]
+     command: 
+       - |
+         apk add --no-cache git &&
+         git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git /app/sqlmap &&
+         python /app/sqlmap/sqlmap.py --version
+     restart: "no"
+
+  # ===== BONUS TOOLS =====
+  
+  # Trivy - Container Security
+  trivy:
+    image: aquasecurity/trivy:latest
+    container_name: csirt-trivy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./trivy-cache:/root/.cache/trivy
+    restart: "no"
+
+  # Subfinder
+  subfinder:
+    image: projectdiscovery/subfinder:latest
+    container_name: csirt-subfinder
+    volumes:
+      - ./subfinder-data:/root/.config/subfinder
+    restart: "no"
+
+  # Httpx
+  httpx:
+    image: projectdiscovery/httpx:latest
+    container_name: csirt-httpx
+    restart: "no"
+
+  # Katana
+  katana:
+    image: projectdiscovery/katana:latest
+    container_name: csirt-katana
+    restart: "no"
+
+volumes:
+  toolbox-data:
+  nuclei-output:
+  yara-rules:
+  yara-samples:
+  metasploit-data:
+  zap-data:
+  sqlmap-data:
+  subfinder-data:
+  trivy-cache:

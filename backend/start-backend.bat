@@ -1,0 +1,3 @@
+@echo off
+echo Starting CSIRT Backend Server...
+node node_modules\ts-node-dev\lib\bin.js --respawn --transpile-only src\server.ts

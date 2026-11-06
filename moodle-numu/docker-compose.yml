@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: numu_moodle_db
+    environment:
+      POSTGRES_DB: moodle_numu
+      POSTGRES_USER: moodle_user
+      POSTGRES_PASSWORD: numu_secure_2026
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
+    ports:
+      - "5432:5432"
+    networks:
+      - moodle_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moodle_user -d moodle_numu"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: numu_moodle_redis
+    command: redis-server --appendonly yes --requirepass numu_redis_2026
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - moodle_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Moodle Application
+  moodle:
+    image: moodlehq/moodle-php-apache:8.2
+    container_name: numu_moodle_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      MOODLE_DATABASE_TYPE: pgsql
+      MOODLE_DATABASE_HOST: postgres
+      MOODLE_DATABASE_NAME: moodle_numu
+      MOODLE_DATABASE_USER: moodle_user
+      MOODLE_DATABASE_PASSWORD: numu_secure_2026
+      MOODLE_DATABASE_PORT: 5432
+      MOODLE_REVERSEPROXY: "true"
+      MOODLE_SSLPROXY: "false"
+    volumes:
+      - ./moodle:/var/www/html
+      - moodledata:/var/www/moodledata
+      - ./config/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+      - ./theme/numu_cyber:/var/www/html/theme/numu_cyber
+      - ./local/numu_integration:/var/www/html/local/numu_integration
+    ports:
+      - "8080:80"
+    networks:
+      - moodle_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/admin/cli/healthcheck.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Adminer (Database Management)
+  adminer:
+    image: adminer:latest
+    container_name: numu_moodle_adminer
+    depends_on:
+      - postgres
+    ports:
+      - "8081:8080"
+    networks:
+      - moodle_network
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+
+  # Mailhog (Email Testing)
+  mailhog:
+    image: mailhog/mailhog
+    container_name: numu_moodle_mail
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    networks:
+      - moodle_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  moodledata:
+    driver: local
+
+networks:
+  moodle_network:
+    driver: bridge

@@ -1,0 +1,89 @@
+<div class="d-flex dashboard-container">
+    {{> theme_numu_cyber/sidebar }}
+    
+    <div class="flex-grow-1 d-flex flex-column">
+        <!-- Header -->
+        <header class="bg-white border-bottom px-4 py-3 d-flex align-items-center justify-content-between sticky-top" style="height: 72px;">
+            <div class="d-flex align-items-center flex-grow-1" style="max-width: 600px;">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0"><i class="fa fa-search text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" placeholder="Buscar cursos, recursos...">
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 ms-4">
+                <button class="btn btn-light rounded-circle position-relative p-2">
+                    <i class="fa fa-bell text-secondary"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                </button>
+                <div class="d-flex align-items-center gap-2 px-2 py-1 hover-bg-light rounded cursor-pointer">
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white font-weight-bold" style="width: 36px; height: 36px;">
+                        {{user_initials}}
+                    </div>
+                    <div class="d-none d-md-block lh-1">
+                        <div class="small font-weight-bold">{{user_fullname}}</div>
+                        <small class="text-muted">{{user_role}}</small>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="p-4 overflow-auto">
+            <!-- Stats Grid -->
+            <div class="row g-4 mb-4">
+                {{#stats}}
+                <div class="col-md-3">
+                    <div class="stat-card h-100">
+                        <div class="text-muted small font-weight-bold text-uppercase mb-2">{{label}}</div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="display-6 font-weight-bold">{{value}}</div>
+                            <i class="fa {{icon}} {{color_class}} fa-2x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+                {{/stats}}
+            </div>
+
+            <!-- Content Header -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h2 class="h4 font-weight-bold mb-0">Mis Cursos</h2>
+                <a href="#" class="text-primary text-decoration-none font-weight-bold">Ver todos <i class="fa fa-chevron-right small ms-1"></i></a>
+            </div>
+
+            <!-- Courses Grid -->
+            <div class="row g-4">
+                {{#courses}}
+                <div class="col-md-4">
+                    <a href="#" class="text-decoration-none">
+                        <div class="course-card h-100 d-flex flex-column" style="{{style}}">
+                            <div class="badge-status">{{badge_text}}</div>
+                            <!-- Mock Circular Progress -->
+                            <div class="progress-circle rounded-circle border border-4 border-white d-flex align-items-center justify-content-center">
+                                <span class="font-weight-bold text-white">{{progress}}%</span>
+                            </div>
+
+                            <div class="mt-auto pt-5">
+                                <h3 class="h5 font-weight-bold mb-1">{{title}}</h3>
+                                <div class="small opacity-75 mb-3">{{prof}}</div>
+                                
+                                <div class="d-flex align-items-center justify-content-between small text-white-50">
+                                    <div>Progreso del curso</div>
+                                    <div>{{modules}} módulos</div>
+                                </div>
+                                <div class="progress mt-1 mb-3" style="height: 6px; background: rgba(255,255,255,0.3);">
+                                    <div class="progress-bar bg-white" style="width: {{progress}}%"></div>
+                                </div>
+
+                                <div class="d-flex gap-3 small text-white-50">
+                                    <span><i class="fa fa-users me-1"></i> {{students}}</span>
+                                    <span><i class="fa fa-clock me-1"></i> {{hours}}h</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {{/courses}}
+            </div>
+        </main>
+    </div>
+</div>

@@ -1,0 +1,5 @@
+{
+    "scripts": {
+        "install-deps": "npm install jspdf recharts next-themes @dnd-kit/core @dnd-kit/sortable bullmq ioredis date-fns"
+    }
+}

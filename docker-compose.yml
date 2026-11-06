@@ -1,0 +1,85 @@
+services:
+  # 0. Nmap
+  nmap:
+    image: instrumentisto/nmap:latest
+    container_name: csirt-nmap
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: [ "tail -f /dev/null" ]
+    volumes:
+      - ./scan-results:/scan-results
+    networks:
+      - csirt-net
+
+  # 1. Nuclei (ProjectDiscovery)
+  nuclei:
+    image: projectdiscovery/nuclei:latest
+    container_name: csirt-nuclei
+    entrypoint: [ "/bin/sh", "-c" ] # Keep alive or ready for exec
+    command: [ "tail -f /dev/null" ]
+    volumes:
+      - ./scan-results:/scan-results
+    networks:
+      - csirt-net
+
+  # 2. OWASP ZAP
+  zap:
+    image: zaproxy/zap-stable
+    container_name: csirt-zap
+    user: root # Needed to write to the shared volume in some envs
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: [ "tail -f /dev/null" ]
+    volumes:
+      - ./scan-results:/scan-results
+    networks:
+      - csirt-net
+
+  # 3. Feroxbuster
+  feroxbuster:
+    image: epi052/feroxbuster:latest
+    container_name: csirt-feroxbuster
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: [ "tail -f /dev/null" ]
+    volumes:
+      - ./scan-results:/scan-results
+    networks:
+      - csirt-net
+
+  # 4. WhatWeb
+  whatweb:
+    build:
+      context: ./src/lib/docker/whatweb
+      dockerfile: Dockerfile
+    image: csirt-whatweb:local
+    container_name: csirt-whatweb
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: [ "tail -f /dev/null" ]
+    volumes:
+      - ./scan-results:/scan-results
+    networks:
+      - csirt-net
+
+  # 5. testssl.sh
+  testssl:
+    image: drwetter/testssl.sh
+    container_name: csirt-testssl
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: [ "tail -f /dev/null" ]
+    volumes:
+      - ./scan-results:/scan-results
+    networks:
+      - csirt-net
+
+  # 6. Nikto
+  nikto:
+    image: frapsoft/nikto
+    container_name: csirt-nikto
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: [ "tail -f /dev/null" ]
+    volumes:
+      - ./scan-results:/scan-results
+    networks:
+      - csirt-net
+
+networks:
+  csirt-net:
+    driver: bridge

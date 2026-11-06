@@ -1,0 +1,32 @@
+# Environment
+.env
+
+# Moodle Data
+moodledata/
+moodle/config.php
+
+# Database
+*.sql
+*.dump
+
+# Logs
+*.log
+logs/
+
+# Backups
+backups/
+*.zip
+*.tar.gz
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+docker-compose.override.yml

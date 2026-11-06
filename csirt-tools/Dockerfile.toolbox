@@ -1,0 +1,39 @@
+FROM kalilinux/kali-rolling
+
+# Avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update and install tools
+# Grouped by category for easier maintenance
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Core Utilities
+    git curl wget unzip python3 python3-pip iputils-ping dnsutils net-tools \
+    # Reconnaissance
+    amass \
+    theharvester \
+    sublist3r \
+    dnsrecon \
+    whatweb \
+    # Web Security
+    gobuster \
+    wfuzz \
+    commix \
+    nikto \
+    sslscan \
+    # Network
+    hping3 \
+    netcat-traditional \
+    masscan \
+    # Forensics & Malware
+    radare2 \
+    clamav \
+    # Clean up
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a shared volume directory
+WORKDIR /data
+VOLUME /data
+
+# Default command to keep container running
+CMD ["tail", "-f", "/dev/null"]

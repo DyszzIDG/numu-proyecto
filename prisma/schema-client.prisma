@@ -1,0 +1,444 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id              String            @id @default(cuid())
+  name            String?
+  email           String?           @unique
+  emailVerified   DateTime?
+  password        String?
+  image           String?
+  role            String            @default("USER") // ADMIN, USER
+  isAdmin         Boolean           @default(false)
+  isSuperAdmin    Boolean           @default(false) // Full control over all dashboards
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  accounts        Account[]
+  sessions        Session[]
+  plan            UserPlan?
+  toolExecutions  ToolExecution[]
+  dashboardAccess DashboardAccess[]
+  ctfSolves       CTFSolve[]
+  transactions    Transaction[]
+  userProfile     UserProfile?
+  clientAccount   ClientAccount?
+}
+
+enum ServiceType {
+  CYBERSECURITY
+  EDUCATION
+  AI
+  FINTECH
+}
+
+model UserProfile {
+  id              String           @id @default(cuid())
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio             String?
+  location        String?
+  website         String?
+  avatar          String?
+  serviceProfiles ServiceProfile[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model ServiceProfile {
+  id            String      @id @default(cuid())
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  service       ServiceType
+  metadata      String? // JSON field for service-specific data
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([userProfileId, service])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// CLIENT PORTAL MODELS
+// ============================================
+
+model ClientAccount {
+  id            String          @id @default(cuid())
+  userId        String          @unique
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName   String
+  taxId         String?
+  address       String?
+  phone         String?
+  services      ClientService[]
+  tickets       SupportTicket[]
+  invoices      Invoice[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model ClientService {
+  id              String        @id @default(cuid())
+  clientAccountId String
+  clientAccount   ClientAccount @relation(fields: [clientAccountId], references: [id], onDelete: Cascade)
+  serviceType     String        // CSIRT, SOC, SCANNING, etc.
+  status          String        // active, suspended, cancelled
+  startDate       DateTime
+  endDate         DateTime?
+  monthlyFee      Float
+  metadata        String?       // JSON config
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([clientAccountId])
+}
+
+model SupportTicket {
+  id              String          @id @default(cuid())
+  clientAccountId String
+  clientAccount   ClientAccount   @relation(fields: [clientAccountId], references: [id], onDelete: Cascade)
+  subject         String
+  description     String          @db.Text
+  status          String          // open, in_progress, resolved, closed
+  priority        String          // low, medium, high, urgent
+  assignedTo      String?
+  messages        TicketMessage[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([clientAccountId])
+  @@index([status])
+}
+
+model TicketMessage {
+  id        String        @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  String
+  content   String        @db.Text
+  isStaff   Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId])
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  clientAccountId String
+  clientAccount   ClientAccount @relation(fields: [clientAccountId], references: [id], onDelete: Cascade)
+  invoiceNumber   String        @unique
+  amount          Float
+  status          String        // pending, paid, overdue
+  dueDate         DateTime
+  paidDate        DateTime?
+  pdfUrl          String?
+  createdAt       DateTime      @default(now())
+
+  @@index([clientAccountId])
+  @@index([status])
+}
+
+// ============================================
+// CSIRT / SECURITY MODELS
+// ============================================
+
+model Case {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  priority    String // low, medium, high, critical
+  status      String // open, investigating, resolved, closed
+  type        String // incident, vulnerability, scan_issue
+  assignedTo  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  scanResultId String?
+  scanResult   ScanResult? @relation(fields: [scanResultId], references: [id])
+  timeline     CaseTimeline[]
+  artifacts    CaseArtifact[]
+
+  @@index([status])
+  @@index([priority])
+}
+
+model CaseTimeline {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  action    String
+  details   String?
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@index([caseId])
+}
+
+model CaseArtifact {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  name      String
+  type      String // file, url, hash, ip
+  value     String
+  createdAt DateTime @default(now())
+
+  @@index([caseId])
+}
+
+model ScanTarget {
+  id          String       @id @default(cuid())
+  target      String       @unique // IP or domain
+  type        String // ip, domain
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  scans       ScanResult[]
+}
+
+model ScanResult {
+  id          String        @id @default(cuid())
+  targetId    String
+  target      ScanTarget    @relation(fields: [targetId], references: [id], onDelete: Cascade)
+  scanType    String // nmap, http, ssl, dns, whois, full
+  status      String // pending, running, success, failed
+  startedAt   DateTime?
+  completedAt DateTime?
+  metadata    String? // JSON for tool-specific data
+  findings    ScanFinding[]
+  cases       Case[]
+  createdAt   DateTime      @default(now())
+
+  @@index([targetId])
+  @@index([status])
+}
+
+model ScanFinding {
+  id          String     @id @default(cuid())
+  scanId      String
+  scan        ScanResult @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  category    String // port, vulnerability, general
+  severity    String // info, low, medium, high, critical
+  title       String
+  description String?
+  rawData     String? // JSON or text
+  createdAt   DateTime   @default(now())
+
+  @@index([scanId])
+  @@index([severity])
+}
+
+// ============================================
+// TOOL EXECUTION MODELS
+// ============================================
+
+model ToolExecution {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toolName   String
+  target     String
+  status     String // pending, running, completed, failed
+  output     String?  @db.Text
+  startedAt  DateTime @default(now())
+  finishedAt DateTime?
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ============================================
+// DASHBOARD ACCESS MODELS
+// ============================================
+
+model DashboardAccess {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dashboardType String // csirt, education, ai, fintech
+  accessLevel   String // read, write, admin
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, dashboardType])
+}
+
+// ============================================
+// EDUCATION MODELS
+// ============================================
+
+model Course {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  category    String
+  difficulty  String // beginner, intermediate, advanced
+  duration    Int // in minutes
+  thumbnail   String?
+  published   Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  modules     CourseModule[]
+  enrollments Enrollment[]
+}
+
+model CourseModule {
+  id          String   @id @default(cuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  order       Int
+  content     String?  @db.Text
+  videoUrl    String?
+  duration    Int // in minutes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lessons     Lesson[]
+
+  @@index([courseId])
+}
+
+model Lesson {
+  id          String       @id @default(cuid())
+  moduleId    String
+  module      CourseModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title       String
+  content     String       @db.Text
+  order       Int
+  videoUrl    String?
+  duration    Int // in minutes
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  completions LessonCompletion[]
+
+  @@index([moduleId])
+}
+
+model Enrollment {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress    Int      @default(0) // percentage
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([userId])
+}
+
+model LessonCompletion {
+  id          String   @id @default(cuid())
+  userId      String
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+}
+
+// ============================================
+// CTF MODELS
+// ============================================
+
+model CTFChallenge {
+  id          String     @id @default(cuid())
+  title       String
+  description String
+  category    String
+  difficulty  String // easy, medium, hard
+  points      Int
+  flag        String
+  hints       String? // JSON array
+  published   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  solves      CTFSolve[]
+}
+
+model CTFSolve {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challengeId String
+  challenge   CTFChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  solvedAt    DateTime     @default(now())
+
+  @@unique([userId, challengeId])
+  @@index([userId])
+}
+
+// ============================================
+// SUBSCRIPTION & BILLING MODELS
+// ============================================
+
+model UserPlan {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planType  String // free, pro, enterprise
+  status    String // active, cancelled, expired
+  startDate DateTime
+  endDate   DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount        Float
+  currency      String   @default("USD")
+  status        String // pending, completed, failed
+  description   String?
+  paymentMethod String?
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+}
