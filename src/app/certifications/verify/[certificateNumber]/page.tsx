@@ -41,7 +41,7 @@ export default function VerifyCertificatePage() {
 
     useEffect(() => {
         if (certificateNumber) {
-            verifyC ertificate();
+            verifyCertificate();
         }
     }, [certificateNumber]);
 

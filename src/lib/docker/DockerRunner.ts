@@ -6,7 +6,7 @@ const execPromise = util.promisify(exec);
 
 /**
  * Docker Runner for Security Scanning Tools
- * UPDATED: Uses 'csirt-toolbox' for most CLI tools and dedicated containers for others.
+ * UPDATED: Uses 'csirt-toolbox' (unified Kali container) for most CLI tools.
  */
 
 export class DockerRunner {
@@ -31,10 +31,7 @@ export class DockerRunner {
 
             let command;
             if (execMode) {
-                // For toolbox, we assume it's already up, so we use docker exec directly?
-                // Actually, let's use docker-compose exec to be safe with names
-                // But 'docker exec' is faster if we know the container name.
-                // The container_name in compose is 'csirt-toolbox'.
+                // For toolbox, use docker exec directly (container_name in compose is 'csirt-toolbox')
                 command = `docker exec csirt-toolbox ${args.replace('exec csirt-toolbox ', '')}`;
             } else {
                 command = `docker-compose run --rm ${serviceName} ${args}`;
@@ -77,20 +74,25 @@ export class DockerRunner {
 
     // ===== DEDICATED CONTAINERS =====
 
+    /**
+     * FIX: target always appended to args, never lost
+     */
     static async runNmap(target: string, args: string = ''): Promise<string> {
-        return this.runTool('nmap', args || `-F -T4 ${target}`);
+        const fullArgs = args ? `${args} ${target}` : `-sV -F -T4 ${target}`;
+        return this.runTool('nmap', fullArgs);
     }
 
     static async runNuclei(target: string): Promise<string> {
-        return this.runTool('nuclei', `-u ${target} -silent`);
+        return this.runInToolbox(`nuclei -u ${target} -silent -nc`);
     }
 
     static async runSqlMap(target: string): Promise<string> {
-        return this.runTool('sqlmap', `-u "${target}" --batch --banner`);
+        return this.runInToolbox(`sqlmap -u "${target}" --batch --banner --level=1`);
     }
 
     static async runYara(target: string): Promise<string> {
-        return this.runTool('yara', '--version');
+        // YARA requires rule files; return version as health check
+        return this.runInToolbox(`yara --version`);
     }
 
     static async runZap(target: string): Promise<string> {
@@ -98,7 +100,6 @@ export class DockerRunner {
     }
 
     static async runWpscan(target: string): Promise<string> {
-        // Run dedicated wpscan container interactively
         try {
             const { stdout, stderr } = await execPromise(`docker run --rm wpscanteam/wpscan --url ${target} --no-header --no-banner`, {
                 timeout: 300000
@@ -110,7 +111,6 @@ export class DockerRunner {
     }
 
     static async runSubfinder(target: string): Promise<string> {
-        // Run dedicated subfinder container
         try {
             const { stdout, stderr } = await execPromise(`docker run --rm projectdiscovery/subfinder -d ${target} -silent`, {
                 timeout: 300000
@@ -141,16 +141,20 @@ export class DockerRunner {
     }
 
     static async runWhatWeb(target: string): Promise<string> {
-        return this.runInToolbox(`whatweb ${target}`);
+        return this.runInToolbox(`whatweb ${target} -v`);
     }
 
     // Web Security
     static async runGobuster(target: string): Promise<string> {
-        return this.runInToolbox(`gobuster dir -u ${target} -w /usr/share/wordlists/dirb/common.txt --no-error`);
+        return this.runInToolbox(`gobuster dir -u ${target} -w /usr/share/wordlists/dirb/common.txt --no-error -q`);
     }
 
     static async runNikto(target: string): Promise<string> {
         return this.runInToolbox(`nikto -h ${target} -maxtime 60s`);
+    }
+
+    static async runFeroxbuster(target: string): Promise<string> {
+        return this.runInToolbox(`feroxbuster -u ${target} --depth 2 --quiet --no-state`);
     }
 
     static async runWfuzz(target: string): Promise<string> {
@@ -161,10 +165,14 @@ export class DockerRunner {
         return this.runInToolbox(`commix --url="${target}" --batch`);
     }
 
+    static async runTestSSL(target: string): Promise<string> {
+        return this.runInToolbox(`testssl.sh --fast --color 0 ${target}`);
+    }
+
     // Network & Forensics
     static async runMasscan(target: string): Promise<string> {
         // Needs root usually, container runs as root
-        return this.runInToolbox(`masscan ${target} -p80,443 --rate=1000`);
+        return this.runInToolbox(`masscan ${target} -p80,443,8080,8443 --rate=1000`);
     }
 
     static async runHping3(target: string): Promise<string> {
@@ -172,17 +180,18 @@ export class DockerRunner {
     }
 
     static async runRadare2(target: string): Promise<string> {
+        // FIX: return version info (r2 is interactive; non-interactive use needs a file)
         return this.runInToolbox(`r2 -v`);
     }
 
     // Legacy / Others
     static async runMetasploit(): Promise<string> {
-        return this.runTool('metasploit', `msfconsole -x "version; exit"`);
+        // FIX: added -q flag to suppress banner and avoid timeout
+        return this.runTool('metasploit', `msfconsole -q -x "version; exit"`);
     }
 
     static async runLynis(): Promise<string> {
-        // Installed in toolbox? Or separate? 
-        // We kept separate alpine in compose, let's use that for now or move to toolbox
-        return this.runTool('lynis', 'show version');
+        // FIX: use 'audit system --quick' instead of broken 'show version'
+        return this.runInToolbox(`lynis audit system --quick --no-colors`);
     }
 }

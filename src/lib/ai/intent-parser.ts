@@ -188,6 +188,24 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         },
         defaultScanType: 'quick',
         baseCommand: 'subfinder'
+    },
+    yara: {
+        keywords: ['yara', 'rule', 'malware', 'signature', 'pattern', 'regla', 'malicioso', 'firma', 'deteccion'],
+        scanTypes: {
+            quick: ['--version'],
+            full: ['-r', '/rules/', '/target/']
+        },
+        defaultScanType: 'quick',
+        baseCommand: 'yara'
+    },
+    hping3: {
+        keywords: ['hping3', 'hping', 'packet', 'craft', 'syn', 'flood', 'paquete', 'tcp syn'],
+        scanTypes: {
+            quick: ['-c', '3', '-S'],
+            full: ['-c', '10', '-S', '--flood']
+        },
+        defaultScanType: 'quick',
+        baseCommand: 'hping3'
     }
 };
 
@@ -405,7 +423,9 @@ function generateExplanation(
         masscan: `Detecté que quieres un escaneo masivo de puertos con Masscan.`,
         gobuster: `Detecté que quieres hacer fuerza bruta de directorios con Gobuster.`,
         wpscan: `Detecté que quieres escanear un sitio WordPress con WPScan.`,
-        subfinder: `Detecté que quieres descubrir subdominios pasivamente con Subfinder.`
+        subfinder: `Detecté que quieres descubrir subdominios pasivamente con Subfinder.`,
+        yara: `Detecté que quieres usar reglas YARA para detección de malware y patrones maliciosos.`,
+        hping3: `Detecté que quieres construir y enviar paquetes TCP/IP custom con hping3.`
     };
 
     let explanation = explanations[tool] || `Herramienta detectada: ${tool}`;

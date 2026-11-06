@@ -1,7 +1,7 @@
-"""
-AI Client for Next.js
-Wrapper for calling the Python AI agent service
-"""
+/**
+ * AI Client for Next.js
+ * Wrapper for calling the Python AI agent service
+ */
 
 export interface AIAnalyzeRequest {
     prompt: string;
