@@ -4,6 +4,7 @@ import "./globals.css";
 import clsx from "clsx";
 import SessionProvider from "@/components/providers/SessionProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const jetbrainsMono = JetBrains_Mono({
@@ -27,6 +28,7 @@ export default function RootLayout({
                 <SessionProvider>
                     <ThemeProvider>
                         {children}
+                        <Toaster position="top-right" richColors theme="dark" />
                     </ThemeProvider>
                 </SessionProvider>
             </body>

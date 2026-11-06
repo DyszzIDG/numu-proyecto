@@ -9,6 +9,7 @@ import {
     FileDown, FileText, Keyboard, Sun, Moon, Workflow, Users, Lightbulb
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from 'sonner';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { WorkflowBuilder } from '@/components/workflow/WorkflowBuilder';
@@ -206,6 +207,47 @@ export default function CiberAsistenteIA() {
 
     // Theme
     const { theme, toggleTheme } = useTheme();
+
+    // Docker Health & Simulation Mode
+    const [simulationMode, setSimulationMode] = useState<boolean>(true);
+    const [dockerStatus, setDockerStatus] = useState<{
+        loading: boolean;
+        available: boolean;
+        toolboxRunning: boolean;
+        message: string;
+    }>({
+        loading: true,
+        available: false,
+        toolboxRunning: false,
+        message: 'Verificando Docker...'
+    });
+
+    useEffect(() => {
+        async function checkDocker() {
+            try {
+                const res = await fetch('/api/docker/health');
+                const data = await res.json();
+                const isToolbox = !!data.toolboxRunning;
+                setDockerStatus({
+                    loading: false,
+                    available: !!data.dockerAvailable,
+                    toolboxRunning: isToolbox,
+                    message: data.message || ''
+                });
+                if (isToolbox) {
+                    setSimulationMode(false);
+                }
+            } catch {
+                setDockerStatus({
+                    loading: false,
+                    available: false,
+                    toolboxRunning: false,
+                    message: 'Docker fuera de servicio'
+                });
+            }
+        }
+        checkDocker();
+    }, []);
 
     // Keyboard shortcuts
     useKeyboardShortcuts([
@@ -417,6 +459,7 @@ export default function CiberAsistenteIA() {
                         scanType: result.scanType,
                         flags: result.flags
                     },
+                    simulation: simulationMode,
                     generatedBy: 'ai',
                     aiPrompt: prompt,
                     aiConfidence: result.confidence
@@ -430,7 +473,10 @@ export default function CiberAsistenteIA() {
 
             const data = await response.json();
 
-            alert(`✅ Escaneo iniciado con éxito!\nID: ${data.executionId}\nHerramienta: ${result.tool}`);
+            toast.success(simulationMode ? '🧪 Escaneo simulado finalizado' : '✅ Escaneo ejecutado en Docker', {
+                description: `Herramienta: ${result.tool.toUpperCase()} • Objetivo: ${result.target || 'N/A'}`,
+                duration: 5000
+            });
             setResult(null);
             setPrompt('');
 
@@ -444,6 +490,7 @@ export default function CiberAsistenteIA() {
             console.error('Error executing scan:', error);
             // Set the error message - it will be displayed by the error component below
             setError(error.message || 'Error desconocido al ejecutar el escaneo');
+            toast.error('Error al ejecutar escaneo', { description: error.message || 'Fallo desconocido' });
         } finally {
             setLoading(false);
         }
@@ -754,6 +801,45 @@ export default function CiberAsistenteIA() {
                                     )}
                                 </CardTitle>
                                 <div className="flex items-center gap-2">
+                                    {/* Docker Status Badge */}
+                                    <div 
+                                        className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                                            dockerStatus.available
+                                                ? dockerStatus.toolboxRunning
+                                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                                    : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
+                                                : 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                                        }`}
+                                        title={dockerStatus.message}
+                                    >
+                                        <span className={`w-1.5 h-1.5 rounded-full ${
+                                            dockerStatus.available ? (dockerStatus.toolboxRunning ? 'bg-emerald-400' : 'bg-cyan-400') : 'bg-zinc-500'
+                                        } animate-pulse`} />
+                                        {dockerStatus.loading ? 'Docker...' : dockerStatus.available ? (dockerStatus.toolboxRunning ? 'Toolbox Listo' : 'Docker Activo') : 'Docker Inactivo'}
+                                    </div>
+
+                                    {/* Simulation Mode Toggle Button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const nextMode = !simulationMode;
+                                            setSimulationMode(nextMode);
+                                            toast.info(
+                                                nextMode 
+                                                    ? '🧪 Modo Simulación activado: resultados rápidos de prueba' 
+                                                    : '⚡ Modo Real activado: escaneos directos con contenedores Docker'
+                                            );
+                                        }}
+                                        className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border transition-all ${
+                                            simulationMode
+                                                ? 'bg-purple-950/40 text-purple-300 border-purple-500/40 shadow-[0_0_12px_rgba(168,85,247,0.2)]'
+                                                : 'bg-emerald-950/40 text-emerald-300 border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
+                                        }`}
+                                        title="Alternar entre modo simulación rápida y ejecución Docker"
+                                    >
+                                        {simulationMode ? '🧪 Modo Simulación' : '⚡ Docker Real'}
+                                    </button>
+
                                     {result && (
                                         <button
                                             onClick={() => setResult(null)}
