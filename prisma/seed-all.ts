@@ -15,6 +15,7 @@ const seeds = [
     'seed-certifications.ts',// 6. Certification tiers
     'seed-ctf.ts',          // 7. CTF challenges & categories
     'seed-lms.ts',          // 8. Learning programs and courses
+    'seed-csirt.ts',        // 9. CSIRT incidents & Threat Intel
 ];
 
 console.log('🚀 Iniciando Master Seeding de NUMU Security Platform...\n');
