@@ -1,6 +1,5 @@
-import { PrismaClient, ServiceType } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { ServiceType } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 
 export async function getUserProfile(userId: string) {
     return await prisma.userProfile.findUnique({

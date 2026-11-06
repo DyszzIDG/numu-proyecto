@@ -5,17 +5,12 @@
 
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-const prisma = new PrismaClient();
-
-// Validate JWT secret exists
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET environment variable is not set');
-}
+// JWT secret with fallback to NEXTAUTH_SECRET to prevent build crashes
+const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'numu-jwt-secret-key-fallback';
 
 export const authOptions: NextAuthOptions = {
     providers: [

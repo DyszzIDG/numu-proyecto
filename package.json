@@ -6,7 +6,9 @@
     "dev": "next dev -H 0.0.0.0 -p 3100",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:seed": "prisma db seed",
+    "db:seed:all": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed-all.ts"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

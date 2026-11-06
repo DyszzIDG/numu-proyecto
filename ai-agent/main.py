@@ -18,9 +18,19 @@ load_dotenv()
 app = FastAPI(title="NUMU AI Security Agent", version="1.0.0")
 
 # CORS configuration
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
+if not allowed_origins:
+    allowed_origins = [
+        "http://localhost:3100",
+        "http://localhost:3000",
+        "https://numu-v2.vercel.app",
+        "https://numu-proyecto.vercel.app"
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3100", "http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

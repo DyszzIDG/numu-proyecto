@@ -32,6 +32,15 @@ export default withAuth(
 export const config = {
     matcher: [
         "/dashboard/:path*",
-        "/csirt/:path*"
+        "/csirt/:path*",
+        "/portal/:path*",
+        "/client/dashboard/:path*",
+        "/client/services/:path*",
+        "/client/reports/:path*",
+        "/client/settings/:path*",
+        "/affiliate/dashboard/:path*",
+        "/profile/:path*",
+        "/vista-administrador/:path*",
+        "/vista-empresa/:path*"
     ],
 };
