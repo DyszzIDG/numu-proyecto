@@ -163,6 +163,22 @@ async function main() {
 
     console.log(`✅ ${incidentsData.length} incidentes CSIRT creados exitosamente.`);
 
+    // 3.1 Also populate legacy/CSIRT Incident table for /api/csirt/incidents
+    const legacyIncidents = [
+        { type: "Ransomware", severity: "Crítico", status: "En Análisis", origin: "RU", description: "Ransomware LockBit 3.0 detectado en NAS", detectedAt: new Date(Date.now() - 1000 * 60 * 45) },
+        { type: "Phishing", severity: "Alto", status: "Contenido", origin: "US", description: "Spear Phishing bancario a directores", detectedAt: new Date(Date.now() - 1000 * 60 * 180) },
+        { type: "Brute Force", severity: "Medio", status: "Erradicado", origin: "CN", description: "Fuerza Bruta SSH contra VPN Gateway", detectedAt: new Date(Date.now() - 1000 * 60 * 60 * 12), resolvedAt: new Date(Date.now() - 1000 * 60 * 60 * 8) },
+        { type: "Data Breach", severity: "Alto", status: "En Análisis", origin: "RU", description: "Exfiltración anómala de 8.4 GB", detectedAt: new Date(Date.now() - 1000 * 60 * 25) },
+        { type: "Exploit", severity: "Alto", status: "Contenido", origin: "CN", description: "Command Injection CVE-2024-21413 en WAF", detectedAt: new Date(Date.now() - 1000 * 60 * 90) },
+        { type: "DoS / DDoS", severity: "Medio", status: "Erradicado", origin: "BR", description: "SYN Flood 2.5 Gbps en balanceador", detectedAt: new Date(Date.now() - 1000 * 60 * 60 * 24), resolvedAt: new Date(Date.now() - 1000 * 60 * 60 * 22) },
+        { type: "Policy Violation", severity: "Bajo", status: "Cerrado", origin: "US", description: "Software no autorizado detectado", detectedAt: new Date(Date.now() - 1000 * 60 * 60 * 48), resolvedAt: new Date(Date.now() - 1000 * 60 * 60 * 46) }
+    ];
+
+    for (const lInc of legacyIncidents) {
+        await prisma.incident.create({ data: lInc });
+    }
+    console.log(`✅ ${legacyIncidents.length} registros en tabla Incident sincronizados.`);
+
     // 4. Seed Threat Intelligence records
     const threatIntelData = [
         {

@@ -30,8 +30,8 @@ export default function IncidentsPage() {
     const fetchData = async () => {
         try {
             const [statsRes, incidentsRes] = await Promise.all([
-                fetch('http://localhost:4000/api/csirt/incidents/stats'),
-                fetch('http://localhost:4000/api/csirt/incidents')
+                fetch('/api/csirt/incidents/stats'),
+                fetch('/api/csirt/incidents')
             ]);
 
             if (statsRes.ok) setStats(await statsRes.json());
