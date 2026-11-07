@@ -19,7 +19,7 @@ interface ToolPattern {
 // Sincronizado con src/app/api/tools/execute/route.ts
 const TOOL_PATTERNS: Record<string, ToolPattern> = {
     nmap: {
-        keywords: ['scan', 'port', 'open', 'service', 'host', 'network', 'ping', 'tcp', 'udp', 'puerto', 'red', 'servicios', 'abiertos'],
+        keywords: ['nmap', 'scan', 'escanear', 'escaneo', 'port', 'puerto', 'puertos', 'open', 'service', 'servicios', 'host', 'network', 'red', 'ping', 'tcp', 'udp', 'abiertos'],
         scanTypes: {
             quick: ['-sV', '-F'],
             full: ['-p-', '-sV', '-sC', '-O'],
@@ -32,7 +32,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'nmap'
     },
     nikto: {
-        keywords: ['web', 'http', 'https', 'website', 'webapp', 'server', 'ssl', 'tls', 'sitio', 'servidor', 'pagina'],
+        keywords: ['nikto', 'web', 'http', 'https', 'website', 'webapp', 'server', 'ssl', 'tls', 'sitio', 'servidor', 'pagina', 'vulnerabilidades web', 'fallos web'],
         scanTypes: {
             quick: ['-h'],
             full: ['-h', '-Tuning', 'x'],
@@ -42,7 +42,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'nikto'
     },
     nuclei: {
-        keywords: ['nuclei', 'template', 'cve', 'vulnerability', 'exploits', 'automaton', 'modern', 'vulnerabilidades', 'plantilla'],
+        keywords: ['nuclei', 'template', 'plantilla', 'cve', 'cves', 'vulnerability', 'vulnerabilidades', 'exploits', 'automaton', 'modern'],
         scanTypes: {
             quick: ['-t', 'cves/'],
             full: ['-t', 'cves/', '-t', 'vulnerabilities/'],
@@ -52,7 +52,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'nuclei'
     },
     feroxbuster: {
-        keywords: ['dir', 'directory', 'path', 'brute force', 'url', 'fuzz', 'directorios', 'rutas', 'fuerza bruta', 'escondidos'],
+        keywords: ['feroxbuster', 'dir', 'directory', 'directorios', 'path', 'rutas', 'brute force', 'fuerza bruta', 'url', 'fuzz', 'escondidos', 'ocultos', 'carpetas'],
         scanTypes: {
             quick: ['--depth', '1'],
             full: ['--depth', '2', '--wordlist', 'common.txt'],
@@ -62,7 +62,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'feroxbuster'
     },
     zap: {
-        keywords: ['zap', 'owasp', 'proxy', 'spider', 'crawl', 'araña', 'zaproxy'],
+        keywords: ['zap', 'owasp', 'proxy', 'spider', 'crawl', 'araña', 'zaproxy', 'owasp top 10'],
         scanTypes: {
             quick: ['-cmd', '-quickurl'],
             full: ['-cmd', '-quickurl', '-quickprogress']
@@ -71,7 +71,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'zap-cli'
     },
     testssl: {
-        keywords: ['ssl', 'tls', 'certificate', 'encrypt', 'cipher', 'certificado', 'cifrado', 'seguridad transport'],
+        keywords: ['testssl', 'ssl', 'tls', 'certificate', 'certificado', 'certificados', 'encrypt', 'cipher', 'cifrado', 'seguridad transport'],
         scanTypes: {
             quick: ['--fast'],
             full: ['--full'],
@@ -81,7 +81,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'testssl'
     },
     whatweb: {
-        keywords: ['tech', 'stack', 'technology', 'cms', 'framework', 'version', 'tecnologia', 'identificar', 'huella'],
+        keywords: ['whatweb', 'tech', 'stack', 'technology', 'tecnologia', 'tecnologías', 'cms', 'framework', 'version', 'identificar', 'huella', 'fingerprint'],
         scanTypes: {
             quick: ['-v'],
             full: ['-a', '3', '-v']
@@ -90,13 +90,23 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'whatweb'
     },
     theharvester: {
-        keywords: ['email', 'domain', 'subdomain', 'osint', 'reconnaissance', 'recon', 'correos', 'dominios', 'inteligencia'],
+        keywords: ['theharvester', 'harvester', 'email', 'emails', 'correos', 'domain', 'dominio', 'subdomain', 'subdominios', 'osint', 'reconnaissance', 'recon', 'inteligencia'],
         scanTypes: {
             quick: ['-d', '-b', 'google'],
             full: ['-d', '-b', 'all']
         },
         defaultScanType: 'quick',
         baseCommand: 'theharvester'
+    },
+    sqlmap: {
+        keywords: ['sqlmap', 'sql', 'injection', 'inyeccion', 'inyección', 'sqli', 'database', 'base de datos', 'dbms', 'tablas'],
+        scanTypes: {
+            quick: ['--batch', '--banner'],
+            full: ['--batch', '--dbs'],
+            aggressive: ['--batch', '--level=3', '--risk=2']
+        },
+        defaultScanType: 'quick',
+        baseCommand: 'sqlmap'
     },
     'recon-ng': {
         keywords: ['recon-ng', 'module', 'workspace', 'investigation', 'investigacion', 'modulos'],
@@ -108,7 +118,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'recon-ng'
     },
     amass: {
-        keywords: ['amass', 'subdomain', 'enumerate', 'enumeration', 'asset', 'discovery', 'subdominio', 'enumerar', 'activos', 'superficie'],
+        keywords: ['amass', 'subdomain', 'subdominios', 'enumerate', 'enumeration', 'asset', 'discovery', 'activos', 'superficie'],
         scanTypes: {
             passive: ['-passive'],
             active: ['-active'],
@@ -118,7 +128,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'amass'
     },
     sublist3r: {
-        keywords: ['sublist3r', 'subdomain', 'subdominio', 'brute'],
+        keywords: ['sublist3r', 'subdomain', 'subdominio', 'subdominios', 'brute'],
         scanTypes: {
             quick: ['-d'],
             full: ['-d', '-b']
@@ -127,7 +137,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'sublist3r'
     },
     dnsrecon: {
-        keywords: ['dnsrecon', 'dns', 'zone', 'transfer', 'zona', 'transferencia'],
+        keywords: ['dnsrecon', 'dns', 'zone', 'transfer', 'zona', 'transferencia', 'registros dns', 'mx', 'txt'],
         scanTypes: {
             quick: ['-d'],
             full: ['-d', '-a']
@@ -136,7 +146,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'dnsrecon'
     },
     wfuzz: {
-        keywords: ['wfuzz', 'fuzz', 'parameter', 'parametro', 'injection'],
+        keywords: ['wfuzz', 'fuzz', 'fuzzing', 'parameter', 'parametro', 'parametros', 'injection'],
         scanTypes: {
             quick: ['-c', '-z'],
             full: ['-c', '-z', '--hc', '404']
@@ -145,7 +155,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'wfuzz'
     },
     commix: {
-        keywords: ['commix', 'command', 'injection', 'comando', 'inyeccion'],
+        keywords: ['commix', 'command', 'injection', 'comando', 'inyeccion', 'rce'],
         scanTypes: {
             quick: ['--url', '--batch'],
             full: ['--url', '--batch', '--all']
@@ -154,7 +164,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'commix'
     },
     masscan: {
-        keywords: ['masscan', 'fast', 'rapid', 'port', 'rapido', 'masivo'],
+        keywords: ['masscan', 'fast', 'rapid', 'port', 'rapido', 'masivo', 'escaneo veloz'],
         scanTypes: {
             quick: ['-p80,443'],
             full: ['-p1-65535']
@@ -163,7 +173,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'masscan'
     },
     gobuster: {
-        keywords: ['gobuster', 'directory', 'dir', 'brute', 'directorio', 'fuerza'],
+        keywords: ['gobuster', 'directory', 'directorios', 'dir', 'brute', 'directorio', 'fuerza bruta'],
         scanTypes: {
             quick: ['dir', '-u', '-w'],
             full: ['dir', '-u', '-w', '-x', 'php,html,js']
@@ -172,7 +182,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'gobuster'
     },
     wpscan: {
-        keywords: ['wpscan', 'wordpress', 'wp', 'plugin', 'theme', 'user', 'usuario', 'cms'],
+        keywords: ['wpscan', 'wordpress', 'wp', 'plugin', 'plugins', 'theme', 'temas', 'user', 'usuario', 'cms'],
         scanTypes: {
             quick: ['--url', '-e', 'p,t,u'],
             full: ['--url', '-e', 'ap,at,u', '--plugins-detection', 'aggressive']
@@ -181,7 +191,7 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
         baseCommand: 'wpscan'
     },
     subfinder: {
-        keywords: ['subfinder', 'subdomain', 'discovery', 'passive', 'subdominio'],
+        keywords: ['subfinder', 'subdomain', 'subdominios', 'discovery', 'passive', 'pasivo'],
         scanTypes: {
             quick: ['-d'],
             full: ['-d', '-all']
@@ -211,12 +221,12 @@ const TOOL_PATTERNS: Record<string, ToolPattern> = {
 
 // Palabras clave para tipos de escaneo (Español e Inglés)
 const SCAN_TYPE_KEYWORDS: Record<string, string[]> = {
-    quick: ['quick', 'fast', 'rapid', 'basic', 'rapido', 'basico', 'veloz', 'simple'],
+    quick: ['quick', 'fast', 'rapid', 'basic', 'rapido', 'rápido', 'basico', 'básico', 'veloz', 'simple'],
     full: ['full', 'complete', 'comprehensive', 'deep', 'thorough', 'completo', 'profundo', 'exhaustivo', 'todo'],
     stealth: ['stealth', 'stealthy', 'hidden', 'quiet', 'undetected', 'sigiloso', 'oculto', 'silencioso'],
-    vulnerability: ['vulnerability', 'vulnerabilities', 'vuln', 'exploit', 'cve', 'vulnerabilidad', 'fallos', 'huecos'],
+    vulnerability: ['vulnerability', 'vulnerabilities', 'vuln', 'exploit', 'cve', 'vulnerabilidad', 'vulnerabilidades', 'fallos', 'huecos'],
     service: ['service', 'services', 'version', 'banner', 'servicios', 'versiones'],
-    aggressive: ['aggressive', 'intense', 'maximum', 'agresivo', 'intenso', 'maximo']
+    aggressive: ['aggressive', 'intense', 'maximum', 'agresivo', 'intenso', 'maximo', 'máximo']
 };
 
 /**
@@ -259,9 +269,9 @@ function detectScanType(prompt: string): string {
 }
 
 /**
- * Calcula el score de coincidencia para una herramienta
+ * Calcula el score de coincidencia para una herramienta específica
  */
-function calculateToolScore(prompt: string, toolConfig: ToolPattern): number {
+function calculateToolScore(toolKey: string, prompt: string, toolConfig: ToolPattern): number {
     const lowerPrompt = prompt.toLowerCase();
     const matches = toolConfig.keywords.filter(keyword =>
         lowerPrompt.includes(keyword)
@@ -269,18 +279,15 @@ function calculateToolScore(prompt: string, toolConfig: ToolPattern): number {
 
     if (matches.length === 0) return 0;
 
-    // Score = (matches / total keywords) * 100
-    // Adjusted weight to be more sensitive
-    const baseScore = (matches.length / toolConfig.keywords.length) * 150;
+    // Bonus si el nombre exacto de la herramienta está en el prompt
+    const exactMatch = lowerPrompt.includes(toolKey);
+    const exactBonus = exactMatch ? 50 : 0;
 
-    // Bonus por múltiples matches
-    const matchBonus = matches.length > 1 ? 20 : 0;
+    // Ponderación por palabras clave coincidentes
+    const matchScore = Math.min(matches.length * 30, 60);
+    const multiMatchBonus = matches.length > 1 ? 20 : 0;
 
-    // Bonus si el nombre de la herramienta está explícito
-    const toolName = Object.keys(TOOL_PATTERNS).find(k => k === lowerPrompt || lowerPrompt.includes(k));
-    const exactMatchBonus = toolName ? 50 : 0;
-
-    return Math.min(baseScore + matchBonus + exactMatchBonus, 100);
+    return Math.min(matchScore + multiMatchBonus + exactBonus, 100);
 }
 
 /**
@@ -295,15 +302,15 @@ export function parseIntent(prompt: string, manualTarget?: string): ParsedIntent
     // 2. Calcular scores para cada herramienta
     const toolScores: Record<string, number> = {};
     for (const [tool, config] of Object.entries(TOOL_PATTERNS)) {
-        toolScores[tool] = calculateToolScore(prompt, config);
+        toolScores[tool] = calculateToolScore(tool, prompt, config);
     }
 
     // 3. Seleccionar la herramienta con mayor score
     const bestTool = Object.entries(toolScores)
         .sort(([, a], [, b]) => b - a)[0];
 
-    const [selectedTool, confidence] = bestTool;
-    const toolConfig = TOOL_PATTERNS[selectedTool];
+    const [selectedTool, rawConfidence] = bestTool;
+    const toolConfig = TOOL_PATTERNS[selectedTool] || TOOL_PATTERNS.nmap;
 
     // 4. Detectar tipo de escaneo
     const scanType = detectScanType(prompt);
@@ -315,6 +322,7 @@ export function parseIntent(prompt: string, manualTarget?: string): ParsedIntent
     const command = buildCommand(selectedTool, target, flags, scanType);
 
     // 7. Generar explicación
+    const confidence = Math.max(Math.round(rawConfidence), 60); // Min 60 if matched
     const explanation = generateExplanation(selectedTool, scanType, target, confidence);
 
     return {
@@ -322,7 +330,7 @@ export function parseIntent(prompt: string, manualTarget?: string): ParsedIntent
         target,
         scanType,
         flags,
-        confidence: Math.round(confidence), // Round confidence
+        confidence,
         explanation,
         command: command || undefined
     };
@@ -335,7 +343,6 @@ export function parseIntentWithManualTool(tool: string, target: string, scanType
     const toolConfig = TOOL_PATTERNS[tool];
 
     if (!toolConfig) {
-        // Fallback for unknown tools / tools not in pattern list yet
         return {
             tool: tool,
             target: target,
@@ -357,7 +364,7 @@ export function parseIntentWithManualTool(tool: string, target: string, scanType
         target,
         scanType: selectedScanType,
         flags,
-        confidence: 100, // Manual selection = 100% confidence
+        confidence: 100,
         explanation,
         command
     };
@@ -378,6 +385,7 @@ function buildCommand(tool: string, target: string | null, flags: string[], scan
         testssl: (t, f) => `testssl ${f.join(' ')} ${t}`,
         whatweb: (t, f) => `whatweb ${f.join(' ')} ${t}`,
         theharvester: (t, f) => `theharvester -d ${t} ${f.slice(1).join(' ')}`,
+        sqlmap: (t, f) => `sqlmap -u "${t}" ${f.join(' ')}`,
         'recon-ng': (t, f) => `recon-ng -w ${t}`,
         amass: (t, f) => `amass enum -d ${t} ${f.includes('-passive') ? '-passive' : ''}`,
         sublist3r: (t, f) => `sublist3r -d ${t} ${f.slice(1).join(' ')}`,
@@ -387,7 +395,9 @@ function buildCommand(tool: string, target: string | null, flags: string[], scan
         masscan: (t, f) => `masscan ${t} ${f.join(' ')} --rate=1000`,
         gobuster: (t, f) => `gobuster dir -u ${t} -w /usr/share/wordlists/dirb/common.txt`,
         wpscan: (t, f) => `wpscan --url ${t} ${f.join(' ')}`,
-        subfinder: (t, f) => `subfinder -d ${t} ${f.join(' ')}`
+        subfinder: (t, f) => `subfinder -d ${t} ${f.join(' ')}`,
+        yara: (t, f) => `yara ${f.join(' ')} ${t}`,
+        hping3: (t, f) => `hping3 ${f.join(' ')} ${t}`
     };
 
     const builder = commandMap[tool];
@@ -403,17 +413,16 @@ function generateExplanation(
     target: string | null,
     confidence: number
 ): string {
-    const confidenceLevel = confidence > 80 ? 'alta' : confidence > 50 ? 'media' : 'baja';
-
     const explanations: Record<string, string> = {
         nmap: `Detecté que quieres escanear puertos y topología de red con Nmap.`,
-        nikto: `Detecté que quieres buscar vulnerabilidades web básicas con Nikto.`,
-        nuclei: `Detecté que quieres un escaneo moderno de vulnerabilidades con Nuclei.`,
+        nikto: `Detecté que quieres buscar vulnerabilidades web con Nikto.`,
+        nuclei: `Detecté que quieres un escaneo moderno de vulnerabilidades y CVEs con Nuclei.`,
         feroxbuster: `Detecté que quieres descubrir directorios y rutas ocultas con Feroxbuster.`,
         zap: `Detecté que quieres usar OWASP ZAP para un análisis web profundo.`,
         testssl: `Detecté que quieres analizar la configuración SSL/TLS con TestSSL.`,
         whatweb: `Detecté que quieres identificar tecnologías web con WhatWeb.`,
         theharvester: `Detecté que quieres inteligencia OSINT (emails, dominios) con TheHarvester.`,
+        sqlmap: `Detecté que quieres evaluar inyecciones SQL en la base de datos con SQLMap.`,
         'recon-ng': `Detecté que quieres realizar reconocimiento avanzado con Recon-ng.`,
         amass: `Detecté que quieres enumerar subdominios y mapear superficie de ataque con AMASS.`,
         sublist3r: `Detecté que quieres encontrar subdominios con Sublist3r.`,
@@ -436,8 +445,6 @@ function generateExplanation(
     } else {
         explanation += ` Target: ${target}.`;
     }
-
-    // explanation += ` (Confianza: ${confidenceLevel} - ${Math.round(confidence)}%)`;
 
     return explanation;
 }
@@ -500,5 +507,10 @@ export const SUGGESTED_PROMPTS = [
         text: "OSINT para encontrar correos del dominio",
         category: "OSINT",
         tool: "theharvester"
+    },
+    {
+        text: "Buscar SQL injection en la aplicación",
+        category: "Database",
+        tool: "sqlmap"
     }
 ];
